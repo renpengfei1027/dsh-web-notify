@@ -1,0 +1,63 @@
+{
+  "name": "dsh-notifications",
+  "description": "Approval attention plugin for the dsh web GUI: when an approval / plan review / question is pending (in any session, including subagents), the browser fires audible + visual alert channels (WebAudio chime, tab-title badge, PWA app badge, Approval Hub dock with arrival pulse, optional OS notifications). Also alerts on session completion, job failure, and connection loss/reconnect. Editable settings card on the web settings surface. Pure plugin via the profile patch.",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-connection"
+      ],
+      "platform": "web"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-api-remotes": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-settings": "^0.1.0-rc.6",
+    "react": "^18.2.0"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "notification",
+    "alerts",
+    "approval",
+    "plugin"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check lib/client.js && node --check lib/index.js && node scripts/smoke.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/renpengfei1027/dsh-notifications.git"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
