@@ -18,16 +18,16 @@ export const CARD_STYLE: Record<string, string> = {
   gap: '6px',
   padding: '10px 12px',
   borderRadius: '12px',
-  border: '1px solid var(--dsw-alias-state-warn-secondary)',
-  background: 'var(--dsw-specific-input-major)',
-  boxShadow: 'var(--dsw-shadow-lv2)',
-  color: 'var(--dsw-alias-label-primary)',
-  fontFamily: 'var(--ds-font-family)',
+  border: '1px solid var(--notify-accent-info)',
+  background: 'var(--notify-bg-major)',
+  boxShadow: 'var(--notify-shadow)',
+  color: 'var(--notify-label-primary)',
+  fontFamily: 'var(--notify-font)',
   fontSize: '13px',
   lineHeight: '18px',
 }
 export const DOT_STYLE: Record<string, string> = {
-  background: 'var(--dsw-alias-state-warn-primary)',
+  background: 'var(--notify-accent-info)',
   borderRadius: '50%',
   width: '8px',
   height: '8px',
@@ -57,10 +57,10 @@ export interface ToastCardProps {
  * only, no color literals.
  */
 export const VARIANT_ACCENT: Record<string, string> = {
-  error: 'var(--dsw-alias-label-error)',
-  warning: 'var(--dsw-alias-state-warn-primary)',
-  done: 'var(--dsw-alias-state-warn-secondary)',
-  info: 'var(--dsw-alias-state-warn-primary)',
+  error: 'var(--notify-accent-error)',
+  warning: 'var(--notify-accent-warning)',
+  done: 'var(--notify-accent-done)',
+  info: 'var(--notify-accent-info)',
 }
 const ACCENT = (item: ToastItem): string => VARIANT_ACCENT[item.variant ?? 'info'] ?? VARIANT_ACCENT.info
 
@@ -75,11 +75,11 @@ export function ToastCard({ item, onGo, onDismiss }: ToastCardProps) {
       </div>
       <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</div>
       {item.body !== void 0
-        ? <div style={{ color: 'var(--dsw-alias-label-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.body}</div>
+        ? <div style={{ color: 'var(--notify-label-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.body}</div>
         : null}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '2px' }}>
-        <button type="button" onClick={() => onDismiss(item)} title={t('toast.dismiss')} style={{ ...ACTION_BTN_STYLE, color: 'var(--dsw-alias-label-tertiary)', background: 'transparent' }}>{t('toast.dismiss')}</button>
-        <button type="button" onClick={() => onGo(item)} title={t('toast.go')} style={{ ...ACTION_BTN_STYLE, color: 'var(--dsw-alias-label-primary)', background: 'var(--dsw-alias-interactive-bg-hover)' }}>{t('toast.go')}</button>
+        <button type="button" onClick={() => onDismiss(item)} title={t('toast.dismiss')} style={{ ...ACTION_BTN_STYLE, color: 'var(--notify-label-tertiary)', background: 'transparent' }}>{t('toast.dismiss')}</button>
+        <button type="button" onClick={() => onGo(item)} title={t('toast.go')} style={{ ...ACTION_BTN_STYLE, color: 'var(--notify-label-primary)', background: 'var(--notify-bg-hover)' }}>{t('toast.go')}</button>
       </div>
     </div>
   )
