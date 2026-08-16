@@ -8,7 +8,7 @@
 >
 > **当前 DeepSeek Harness 处于开发预览快速迭代期**，推荐以**开发调试模式**（`link:` 本地仓库）挂载本插件：改代码后 `npm run build` 即时生效，配合 `window.__NOTIFICATIONS__` diagnostics 排查问题最顺手；当然也提供了 npm 一键挂载的备选方式。
 
-DSH Web GUI 的**审批注意力插件**：当任意会话（含子代理）出现待处理的审批 / 计划审批 / 提问时，浏览器不再静默——提示音、标签页标题与 Favicon 徽标、OS 通知、右下角通知中心同步呈现；会话完成、任务失败、连接掉线、模型/工具异常（429 配额等）也有提醒。
+DSH Web GUI 的**审批注意力插件**：当任意会话出现待处理的审批 / 计划审批 / 提问时，浏览器不再静默——提示音、标签页标题与 Favicon 徽标、OS 通知、右下角通知中心同步呈现；会话完成、任务失败、连接掉线、模型/工具异常（429 配额等）也有提醒。检测管道覆盖全部会话行（含子代理）；受运行时委派策略约束，被委派的子代理实际上不会产生待审批/提问，其完成 / 失败 / 异常提醒照常生效（详见下文「子代理通知可达性」）。
 
 纯插件形态：host 半（`lib/index.js`）+ client 半（`lib/client.js`，loader 格式），通过 profile patch 挂载。
 
@@ -47,6 +47,14 @@ DSH Web GUI 的**审批注意力插件**：当任意会话（含子代理）出�
 | 通知中心 Dock | 右下角 FAB（实时计数）+ 展开面板列出**全部**待处理；按会话标题 + kind 圆点着色「去处理」一键跳转；归零自动收起；新到达时 FAB 脉冲高亮 |
 
 **当前会话降级**：页面可见且新审批属于当前打开的会话时，提示音与 OS 通知静默（用户眼睛就在这），仅保留视觉通道；切走或最小化后恢复全通道。
+
+**子代理通知可达性**：会话列表是客户端 lineage 展开后的同一张表（子代理行 `origin: 'subagent'` 按 `parentSessionId` 嵌套），因此检测管道天然覆盖子代理行——一旦某个子代理行挂上 `pendingInteraction`，提示音 / 徽标 / OS 通知 / Dock 全通道照常触发。但按当前 DSH 委派语义，被委派的子代理实际上**不会**产生这三种待处理状态：
+
+- **审批**：`dsh-subagent` 在委派边界把子代理的审批策略固定为 `'never'`（无论父级策略如何），任何需审批操作（如 sandbox 升权）被确定性拒绝，不产生 `approval/requested` 帧，也就没有 `pendingInteraction`；
+- **提问 / 计划审批**：`dsh-user-questions` 对受父级持有的调用方抛 `DELEGATED_CALLER`，子代理只能把未决问题写进最终结果，由父级代为询问；计划审批只是 `intent.kind === 'plan-review'` 的提问分类，同样不会产生；
+- 因此通知中心里只可能出现**父会话**的审批条目，子代理行永远不会亮起待处理点。
+
+与之相对，子代理的**完成、任务失败、模型/工具异常**走 `session/event` 流与 jobs 归集，覆盖所有会话，提醒照常生效。
 
 ### 2. 会话 / 子代理完成
 
@@ -191,6 +199,7 @@ dsh plugin --profile web remove dsh-notifications
 ## 限制
 
 - 提醒粒度是**会话级**（列表行只有 kind 状态）；任务失败能到 job 级（含命令 label 与 exit detail），模型 / 工具异常走事件流原文（截 240 字符）
+- 子代理可达性：子代理行位于检测管道内（与会话同一张 lineage 表），但被委派子代理的审批策略固定为 `'never'`、提问被拒，实际不会产生待审批/计划审批/提问条目——只可能出现父会话的审批；完成 / 失败 / 异常提醒照常覆盖子代理（见上文「子代理通知可达性」）
 - 提示音需要页面有过用户手势（浏览器音频策略）；无手势时静默降级为视觉通道
 - OS 通知权限在首次提醒后的下一次点击时请求；若 Windows 不弹，检查浏览器站点设置（127.0.0.1 通知权限）与 Windows「专注助手」
 - 设置卡片走 settings scope；若宿主 apiproxy 未放行第三方命名空间，卡片只读，`DEFAULTS` 生效
@@ -236,7 +245,7 @@ MIT
 >
 > **DeepSeek Harness is currently in a fast-iterating dev-preview phase.** Mounting this plugin via the **dev / debug mode** (`link:` local repo) is recommended: after `npm run build` changes land immediately, and `window.__NOTIFICATIONS__` diagnostics makes troubleshooting smoothest. An npm one-shot install is also provided as an alternative.
 
-**Approval-attention plugin for the DSH Web GUI**: whenever any session (including subagents you've never opened) has a pending approval / plan-review / question, the browser rings back — chime, tab-title + favicon badge, OS notification, and a corner dock all surface the event at once. Completions, job failures, disconnects, and model/tool runtime errors (429 quota, etc.) also alert.
+**Approval-attention plugin for the DSH Web GUI**: whenever any session has a pending approval / plan-review / question, the browser rings back — chime, tab-title + favicon badge, OS notification, and a corner dock all surface the event at once. The detection pipe covers every session row including subagents; delegated subagents cannot actually raise approval/question waits under the current runtime delegation policy (see "Subagent notification reachability" below) while their completion / failure / runtime-error alerts work normally. Completions, job failures, disconnects, and model/tool runtime errors (429 quota, etc.) also alert.
 
 Pure plugin form: a host half (`lib/index.js`) plus a browser half (`lib/client.js`, loader format), mounted via a profile patch.
 
@@ -276,6 +285,14 @@ Fires on a `pendingInteraction` edge for any session (including never-opened sub
 | Notifications dock | A corner FAB with a live count, plus an expandable panel listing **every** pending item; coloured dots per (title, kind); a one-tap "Handle" jumps to the session; auto-collapses at zero; the FAB pulses on new arrivals |
 
 **Current-session degrade**: while the page is visible and the new pending item belongs to the currently open session, chime + OS notify are silenced (you're looking right at it), only the visual surfaces stay active. Switching tabs or minimising restores the full surface.
+
+**Subagent notification reachability**: the session list is one flattened lineage table (subagent rows with `origin: 'subagent'` nest under their `parentSessionId`), so the detection pipe covers subagent rows by construction — any `pendingInteraction` on a subagent row would fire every channel (chime / badge / OS notify / dock). Under the current DSH delegation semantics, however, a delegated subagent can never actually produce one of the three pending states:
+
+- **Approval**: `dsh-subagent` pins the child's approval policy to `'never'` at the delegation boundary (regardless of the parent's policy), so any approval-requiring operation (e.g. a sandbox escalation) is deterministically rejected — no `approval/requested` frame is ever emitted, hence no `pendingInteraction`;
+- **Question / plan-review**: `dsh-user-questions` throws `DELEGATED_CALLER` for callers owned by another live agent, so a subagent can only fold the unresolved question into its final result for the parent to ask; plan-review is merely the `intent.kind === 'plan-review'` classification of a question frame and cannot occur either;
+- As a result only **parent-session** approval entries can ever show up in the notification dock — a subagent row never lights up a pending marker.
+
+By contrast, subagent **completions, job failures and model/tool runtime errors** ride the `session/event` stream and the jobs grouping, which cover every session, and alert normally.
 
 ### 2. Session / subagent completes
 
@@ -422,6 +439,7 @@ dsh plugin --profile web remove dsh-notifications
 ## Limits
 
 - Granularity is **session-level** for pending (list rows only carry a kind state); job failures reach job-level (command label + exit detail); model/tool errors carry the event-stream raw message capped at 240 chars
+- Subagent reachability: subagent rows sit inside the detection pipe (same flattened lineage table), but a delegated subagent's approval policy is pinned to `'never'` and user questions are rejected — no approval/plan-review/question entries ever appear for subagents, only parent-session ones; completion / failure / runtime-error alerts still cover subagents (see "Subagent notification reachability" above)
 - Chimes need a prior user gesture on the page (browser autoplay policy); without one it silently degrades to visual surfaces only
 - OS-notify permission is requested on the first click after the first trigger; if nothing ever appears on Windows, check the browser site settings (127.0.0.1 notify permission) and Windows Focus Assist
 - The card rides the settings scope; if the host apiproxy hasn't whitelisted the namespace, the card is read-only and `DEFAULTS` apply
