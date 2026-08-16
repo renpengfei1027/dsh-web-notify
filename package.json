@@ -1,5 +1,5 @@
 {
-  "name": "dsh-notifications",
+  "name": "dsh-web-notify",
   "description": "Approval attention plugin for the dsh web GUI: when an approval / plan review / question is pending, the browser fires audible + visual alert channels (WebAudio chime, tab-title badge, PWA app badge, Approval Hub dock with arrival pulse, optional OS notifications). The detection pipe covers every session row including subagents — though delegated subagents cannot actually produce approval/question waits under the current delegation policy (approval pinned to 'never', questions rejected), so only parent-session pending entries appear while completion/failure/runtime-error alerts still cover subagents. Also alerts on session completion, job failure, and connection loss/reconnect. Editable settings card on the web settings surface. Pure plugin via the profile patch.",
   "version": "0.1.0",
   "type": "module",
@@ -55,7 +55,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/renpengfei1027/dsh-notifications.git"
+    "url": "https://github.com/renpengfei1027/dsh-web-notify.git"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"

@@ -7,7 +7,7 @@ import type { ToastActions, ToastItem } from './types.ts'
 import type { ToastStore } from './stores.ts'
 import { t } from './locales.ts'
 
-export const TOAST_ROOT_ID = 'dsh-notifications-root'
+export const TOAST_ROOT_ID = 'dsh-web-notify-root'
 
 /** Theme-aware inline styles (aliases mirror the family's module CSS values). */
 export const CARD_STYLE: Record<string, string> = {

@@ -1,4 +1,4 @@
-# dsh-notifications bundle patch: inserts the dual-face plugin row into the
+# dsh-web-notify bundle patch: inserts the dual-face plugin row into the
 # web profile roster. Applied as a profile bundle layer (the `dsh.bundle.patch`
 # manifest field); activate with
 # `dsh plugin --profile <name> add link:<this-directory>`, or manually:
@@ -8,7 +8,7 @@
 # The row is a bare plugin by package name: the node half (exports ".") runs
 # in the host process (a presence announcement section), and the `dsh.client`
 # declaration in package.json makes the browser half (exports "./client",
-# served at /plugins/dsh-notifications/client.js) load in the web GUI.
+# served at /plugins/dsh-web-notify/client.js) load in the web GUI.
 - insert:
     - id: notifications
-      name: 'dsh-notifications'
+      name: 'dsh-web-notify'

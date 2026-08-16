@@ -1,17 +1,17 @@
 /**
- * Release pipeline for dsh-notifications.
+ * Release pipeline for dsh-web-notify.
  *
  * Usage:  node scripts/release.mjs [--dry-run]
  *
- * --dry-run  — every step except the final `npm publish` (renders the exact
+ * --dry-run  every step except the final `npm publish` (renders the exact
  *              command + verifies pack/install again). Default off: performs
  *              the actual publish when the machine is authenticated
  *              (`npm whoami`).
  *
  * Chain:
  *   1. build (esbuild, lib/index.js + lib/client.js)
- *   2. smoke (10 scenarios against the generated bundles)
- *   3. npm pack + isolated install + `import('dsh-notifications')` load check
+ *   2. smoke (9 scenarios against the generated bundles)
+ *   3. npm pack + isolated install + `import('dsh-web-notify')` load check
  *   4. npm publish (skipped on --dry-run)
  *   5. npm view verify on the published version
  */
@@ -22,13 +22,25 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
-const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+// On Windows hermes/fnm, npm ships as a .cmd shim that execFileSync cannot
+// spawn directly without shell=true (EINVAL). Shell is enabled only for npm
+// invocations; node scripts stay on shell-less spawns.
+const NPM_CMD = process.platform === 'win32' ? 'npm.cmd' : 'npm'
 const dry = process.argv.includes('--dry-run')
 
 const run = (cmd, args, opts = {}) =>
   execFileSync(cmd, args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], ...opts }).toString()
 
+const runNpm = (args, opts = {}) =>
+  execFileSync(NPM_CMD, args, {
+    cwd: ROOT,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    shell: process.platform === 'win32',
+    ...opts,
+  }).toString()
+
 const step = (i, name) => console.log(`\n-- [${i}] ${name} --`)
+const NL = '\n'
 
 step(1, 'build')
 run(process.execPath, ['scripts/build.mjs'])
@@ -38,15 +50,15 @@ console.log('lib built + syntax OK')
 
 step(2, 'smoke (generated bundles)')
 const smokeOut = run(process.execPath, ['scripts/smoke.mjs'])
-console.log(smokeOut.split('\n').filter((l) => /ALL SCENARIOS|FAIL/.test(l)).join('\n') || smokeOut)
+console.log(smokeOut.split(NL).filter((l) => /ALL SCENARIOS|FAIL/.test(l)).join(NL) || smokeOut)
 
 step(3, 'pack + isolated install + host-half load')
-const tarball = run(NPM, ['pack', '--silent']).split('\n').filter(Boolean).pop().trim()
-const sandbox = mkdtempSync(join(tmpdir(), 'dsh-notifications-release-'))
+const tarball = runNpm(['pack', '--silent']).split(NL).filter(Boolean).pop().trim()
+const sandbox = mkdtempSync(join(tmpdir(), 'dsh-web-notify-release-'))
 try {
-  run(NPM, ['init', '-y'], { cwd: sandbox })
-  run(NPM, ['install', join(ROOT, tarball)], { cwd: sandbox })
-  const loaded = run(process.execPath, ['--input-type=module', '-e', "const m = await import('dsh-notifications'); process.stdout.write(Object.keys(m).join(','))"], { cwd: sandbox })
+  runNpm(['init', '-y'], { cwd: sandbox })
+  runNpm(['install', join(ROOT, tarball)], { cwd: sandbox })
+  const loaded = run(process.execPath, ['--input-type=module', '-e', "const m = await import('dsh-web-notify'); process.stdout.write(Object.keys(m).join(','))"], { cwd: sandbox })
   if (!/apply/.test(loaded)) throw new Error('host half did not expose apply()')
   console.log('installed + loaded OK:', loaded.trim().slice(0, 80), '…')
 } finally {
@@ -63,17 +75,17 @@ if (dry) {
 step(4, 'whoami gate')
 let who = ''
 try {
-  who = run(NPM, ['whoami']).trim()
+  who = runNpm(['whoami']).trim()
   console.log('publishing as:', who)
 } catch {
-  console.error('not logged in — run `npm login` first, or re-run with --dry-run')
+  console.error('not logged in run `npm login` first, or re-run with --dry-run')
   process.exit(1)
 }
 
 step(5, 'npm publish')
-console.log(run(NPM, ['publish']).split('\n').filter(Boolean).slice(-2).join('\n'))
+console.log(runNpm(['publish']).split(NL).filter(Boolean).slice(-2).join(NL))
 
 step(6, 'verify on registry')
-const v = run(NPM, ['view', 'dsh-notifications', 'version']).trim()
+const v = runNpm(['view', 'dsh-web-notify', 'version']).trim()
 console.log('registry now shows:', v)
-console.log('\nRELEASE COMPLETE ✓ published as', who)
+console.log('\nRELEASE COMPLETE published as', who)

@@ -1,8 +1,8 @@
-# dsh-notifications
+# dsh-web-notify
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[English version](#dsh-notifications-english) · 默认中文
+[English version](#dsh-web-notify-english) · 默认中文
 
 > 本插件由 **DeepSeek Harness**（官方 cordis / `@deepseek-ai/dsh-*` 插件栈）驱动，结合 **DeepSeek-V4-Flash-0731** 模型参数的官方事件帧构建。
 >
@@ -133,7 +133,7 @@ dsh web
 ### 方式二：npm 一键挂载（发布后可用）
 
 ```sh
-dsh plugin --profile web add dsh-notifications
+dsh plugin --profile web add dsh-web-notify
 ```
 
 ### 放行设置命名空间（可选，但推荐）
@@ -191,7 +191,7 @@ node scripts/patch-apiproxy.mjs
 ### 卸载
 
 ```sh
-dsh plugin --profile web remove dsh-notifications
+dsh plugin --profile web remove dsh-web-notify
 ```
 
 或删除本地 profile 的 `cordis.patch.yml` 插入行与 `node_modules` junction。
@@ -207,7 +207,7 @@ dsh plugin --profile web remove dsh-notifications
 ## 项目结构
 
 ```
-dsh-notifications/
+dsh-web-notify/
 ├── package.json          # dsh.client.platform=web + inject + dsh.bundle.patch
 ├── cordis.patch.yml      # 插件行 insert
 ├── src/
@@ -237,9 +237,9 @@ MIT
 
 ---
 
-# dsh-notifications (English)
+# dsh-web-notify (English)
 
-[中文版](#dsh-notifications) · Chinese by default
+[中文版](#dsh-web-notify) · Chinese by default
 
 > Built on the **DeepSeek Harness** (official cordis / `@deepseek-ai/dsh-*` plugin stack) against event frames produced by the **DeepSeek-V4-Flash-0731** model parameters.
 >
@@ -372,7 +372,7 @@ dsh web
 ### Method 2: npm one-shot install (available after publish)
 
 ```sh
-dsh plugin --profile web add dsh-notifications
+dsh plugin --profile web add dsh-web-notify
 ```
 
 ### Whitelist the settings namespace (optional, but recommended)
@@ -431,7 +431,7 @@ Once the plugin has loaded, open the DSH Web DevTools console:
 ### Uninstall
 
 ```sh
-dsh plugin --profile web remove dsh-notifications
+dsh plugin --profile web remove dsh-web-notify
 ```
 
 …or remove the insert row from the profile's `cordis.patch.yml` and delete the `node_modules` junction.
@@ -447,7 +447,7 @@ dsh plugin --profile web remove dsh-notifications
 ## Project layout
 
 ```
-dsh-notifications/
+dsh-web-notify/
 ├── package.json          # dsh.client.platform=web + inject + dsh.bundle.patch
 ├── cordis.patch.yml      # plugin-row insert
 ├── src/

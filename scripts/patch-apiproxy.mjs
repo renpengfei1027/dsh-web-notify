@@ -1,5 +1,5 @@
 /**
- * apiproxy allowlist patches for the `dsh-notifications` plugin.
+ * apiproxy allowlist patches for the `dsh-web-notify` plugin.
  *
  * 1. WEB_SETTINGS_NAMESPACES — expose the `notifications` settings
  *    namespace to the official settings seam (its own comment: "adding a
@@ -11,7 +11,7 @@
  *
  * Idempotent and re-runnable: after a `dsh` upgrade that restores the pristine
  * bundles, run `node scripts/patch-apiproxy.mjs` again, then restart `dsh web`.
- * A backup of each pristine file is left as <file>.orig-dsh-notifications.
+ * A backup of each pristine file is left as <file>.orig-dsh-web-notify.
  *
  * Also upgrades older `approval-alerter` allowlist entries to the current
  * `notifications` namespace (replace-in-place) — so a profile previously
@@ -90,7 +90,7 @@ function patchOne(path, marker, rewriteAll) {
     if (next !== out) { out = next; break }
   }
   if (out !== text) {
-    const backup = path + '.orig-dsh-notifications'
+    const backup = path + '.orig-dsh-web-notify'
     if (!existsSync(backup)) writeFileSync(backup, text)
     writeFileSync(path, out)
     console.log(`PATCHED ${path}`)

@@ -1,5 +1,5 @@
 /**
- * Runtime smoke test for the dsh-notifications client bundle.
+ * Runtime smoke test for the dsh-web-notify client bundle.
  *
  * Stubs the browser (window/document/navigator/MutationObserver), the module
  * loader, react, react-dom/client, and a fake `sessions` service, then drives
@@ -276,7 +276,7 @@ function captureToastStore() {
     bundle.apply(ctx, { sound: false, toast: false, badge: false, notify: false, dock: true, cooldownMs: 0 });
     setRows(list, []);
     await tick();
-    const dockRoot = mounts.find((m) => m.el.id === "dsh-notifications-dock-root");
+    const dockRoot = mounts.find((m) => m.el.id === "dsh-web-notify-dock-root");
     assert(dockRoot !== void 0, "dock portal root created");
     assert(dockRoot.view !== null && dockRoot.view.a[0].name === "DockPanel", "dock root renders DockPanel");
     assert(typeof dockRoot.view.a[1].onGo === "function", "dock exposes go action");

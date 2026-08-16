@@ -1,5 +1,5 @@
 /**
- * Production build for dsh-notifications.
+ * Production build for dsh-web-notify.
  *
  * Emits the same runtime artifacts the repo pipeline would:
  *  - lib/index.js   — host half, plain ESM (imports @deepseek-ai/dsh-settings,
@@ -16,7 +16,7 @@
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 
-const LOADER_ID = 'dsh-notifications';
+const LOADER_ID = 'dsh-web-notify';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 const common = {

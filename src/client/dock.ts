@@ -12,7 +12,7 @@ import { ACTION_BTN_STYLE } from './toast-ui.tsx'
 import { kindLabel } from './channels.ts'
 import { t } from './locales.ts'
 
-export const DOCK_ROOT_ID = 'dsh-notifications-dock-root'
+export const DOCK_ROOT_ID = 'dsh-web-notify-dock-root'
 
 const KIND_DOT: Record<AlerterKind, string> = {
   approval: 'var(--dsw-alias-state-warn-primary)',

@@ -1,5 +1,5 @@
 /**
- * dsh-notifications — host half.
+ * dsh-web-notify — host half.
  *
  * Three jobs:
  *  1. settings section — declares the `notifications` namespace so the web
@@ -37,7 +37,7 @@ const JOBS_TICK_MS = 5000
 export const inject = ['systemPrompt']
 
 /** Model-facing announcement: plugin presence, capabilities, and limits. */
-export const GUIDANCE = '本机已安装 dsh-notifications 插件（DSH Web GUI 的「通知」）：当任意会话的审批或计划审批处于等待时，浏览器会播放提示音、在标签页标题显示待审批徽标、右下角出现通知中心（可展开跳转）。检测管道覆盖全部会话行（含子代理）；被委派的子代理因审批策略固定为 never、提问被拒，实际不会产生待审批/计划审批/提问条目（只可能出现父会话的审批），但其完成、任务失败与模型/工具运行异常提醒照常生效。另有会话完成、任务失败、连接掉线或恢复、以及模型/工具运行异常（如 429 配额超限、达到输出上限）提醒。提醒在浏览器端的 dsh Web 页面生效；OS 通知与提示音需浏览器允许；本插件只负责提醒与跳转，不代替用户做批准/拒绝决定。配置可在 GUI 设置页的「插件配置」→「通知」卡片调整。'
+export const GUIDANCE = '本机已安装 dsh-web-notify 插件（DSH Web GUI 的「通知」）：当任意会话的审批或计划审批处于等待时，浏览器会播放提示音、在标签页标题显示待审批徽标、右下角出现通知中心（可展开跳转）。检测管道覆盖全部会话行（含子代理）；被委派的子代理因审批策略固定为 never、提问被拒，实际不会产生待审批/计划审批/提问条目（只可能出现父会话的审批），但其完成、任务失败与模型/工具运行异常提醒照常生效。另有会话完成、任务失败、连接掉线或恢复、以及模型/工具运行异常（如 429 配额超限、达到输出上限）提醒。提醒在浏览器端的 dsh Web 页面生效；OS 通知与提示音需浏览器允许；本插件只负责提醒与跳转，不代替用户做批准/拒绝决定。配置可在 GUI 设置页的「插件配置」→「通知」卡片调整。'
 
 /** Runtime schema for the alerter settings (defaults live here, mirroring the browser DEFAULTS). */
 export const Config = z.object({

@@ -158,7 +158,7 @@ export function notifyOs(
   opts?: { onClick?: () => void; requireInteraction?: boolean },
 ): void {
   if (!('Notification' in window)) return
-  const tag = 'dsh-notifications:' + row.id
+  const tag = 'dsh-web-notify:' + row.id
   const attach = (n: Notification): void => {
     const onClick = opts?.onClick
     if (typeof onClick === 'function') {
