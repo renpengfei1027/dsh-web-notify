@@ -1,5 +1,6 @@
 # dsh-web-notify
 
+[![npm version](https://img.shields.io/npm/v/dsh-web-notify.svg)](https://www.npmjs.com/package/dsh-web-notify)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 [English version](#dsh-web-notify-english) · 默认中文
@@ -26,7 +27,7 @@ DSH Web GUI 的**审批注意力插件**：当任意会话出现待处理的审�
 ⑤ DevTools 控制台观察 window.__NOTIFICATIONS__ ：
      applied / cardRegistered / monitors / lastHeartbeatAt
      hostStatuses / hostStatusCounts  ← 宿主投递的 job 状态词汇
-     hostFeedCounters                 ← 每类事件计数
+     feedCounters                     ← 每类事件计数
      jobSamples / seenStatuses        ← 浏览器侧采样环
      demo() / demoSound()             ← 一键 UI / 音频 demo
 ```
@@ -116,8 +117,8 @@ DSH 插件通过 `dsh plugin` 命令安装进 **profile**（`dsh web` 对应 `we
 
 ```sh
 # 1. 克隆仓库
-git clone https://github.com/renpengfei1027/dsh-approval-alerter.git
-cd dsh-approval-alerter
+git clone https://github.com/renpengfei1027/dsh-web-notify.git
+cd dsh-web-notify
 
 # 2. 安装依赖并构建（需要 Node.js >= 22）
 npm install
@@ -130,7 +131,7 @@ dsh plugin --profile web add link:$(pwd)
 dsh web
 ```
 
-### 方式二：npm 一键挂载（发布后可用）
+### 方式二：npm 一键挂载
 
 ```sh
 dsh plugin --profile web add dsh-web-notify
@@ -160,7 +161,7 @@ node scripts/patch-apiproxy.mjs
   "settingsScope", true, true
 
 // 宿主事件通道健康度（~30s 一次心跳；lastHeartbeatAt 不变表示 host feed 断了）
-> __NOTIFICATIONS__.counters, __NOTIFICATIONS__.lastHeartbeatAt
+> __NOTIFICATIONS__.feedCounters, __NOTIFICATIONS__.lastHeartbeatAt
   { heartbeat: 4, "agent-error": 1, … }, 1756789012345
 
 // 宿主投递的 job 状态全量词汇（可对照 sentinel / lifecycle 对哪些终态做判断）
@@ -228,7 +229,8 @@ dsh-web-notify/
 └── scripts/
     ├── build.mjs         # esbuild 构建 → lib/{index.js,client.js}（loader 包装）
     ├── smoke.mjs         # 运行时冒烟（9 场景，对生成产物跑）
-    └── patch-apiproxy.mjs # 把 notifications 注入 apiproxy 白名单
+    ├── patch-apiproxy.mjs # 把 notifications 注入 apiproxy 白名单
+    └── release.mjs       # 发布流水线：build → smoke → pack → publish
 ```
 
 ## License
@@ -264,7 +266,7 @@ Pure plugin form: a host half (`lib/index.js`) plus a browser half (`lib/client.
 (5) In DevTools console, inspect `window.__NOTIFICATIONS__`:
        applied / cardRegistered / monitors / lastHeartbeatAt
        hostStatuses / hostStatusCounts ← job status vocab the host emits
-       hostFeedCounters                ← per-event counters
+       feedCounters                    ← per-event counters
        jobSamples / seenStatuses       ← browser-side sample ring
        demo() / demoSound()            ← one-shot UI / audio demos
 ```
@@ -354,8 +356,8 @@ DSH plugins are installed into a **profile** via the `dsh plugin` command (`dsh 
 
 ```sh
 # 1. clone the repo
-git clone https://github.com/renpengfei1027/dsh-approval-alerter.git
-cd dsh-approval-alerter
+git clone https://github.com/renpengfei1027/dsh-web-notify.git
+cd dsh-web-notify
 
 # 2. install dependencies and build (Node.js >= 22 required)
 npm install
@@ -369,7 +371,7 @@ dsh plugin --profile web add link:$(pwd)
 dsh web
 ```
 
-### Method 2: npm one-shot install (available after publish)
+### Method 2: npm one-shot install
 
 ```sh
 dsh plugin --profile web add dsh-web-notify
@@ -399,7 +401,7 @@ Once the plugin has loaded, open the DSH Web DevTools console:
   "settingsScope", true, true
 
 // Host event-feed health (heartbeat ~ every 30 s; a stale lastHeartbeatAt means the host feed broke)
-> __NOTIFICATIONS__.hostFeedCounters, __NOTIFICATIONS__.lastHeartbeatAt
+> __NOTIFICATIONS__.feedCounters, __NOTIFICATIONS__.lastHeartbeatAt
   { heartbeat: 4, "agent-error": 1, … }, 1756789012345
 
 // Complete job-status vocabulary emitted by the host — use it to double-check
@@ -468,7 +470,8 @@ dsh-web-notify/
 └── scripts/
     ├── build.mjs         # esbuild → lib/{index.js,client.js} (loader-wrapped)
     ├── smoke.mjs         # runtime smoke (9 scenarios, runs on built artefacts)
-    └── patch-apiproxy.mjs # inject notifications into apiproxy allowlists
+    ├── patch-apiproxy.mjs # inject notifications into apiproxy allowlists
+    └── release.mjs       # release pipeline: build → smoke → pack → publish
 ```
 
 ## License

@@ -16,7 +16,7 @@
  *   5. npm view verify on the published version
  */
 import { execFileSync } from 'node:child_process'
-import { rmSync, mkdtempSync } from 'node:fs'
+import { rmSync, mkdtempSync, copyFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -52,6 +52,19 @@ step(2, 'smoke (generated bundles)')
 const smokeOut = run(process.execPath, ['scripts/smoke.mjs'])
 console.log(smokeOut.split(NL).filter((l) => /ALL SCENARIOS|FAIL/.test(l)).join(NL) || smokeOut)
 
+// Swap in the concise npm README for the tarball
+const README_PATH = join(ROOT, 'README.md')
+const README_BAK = join(ROOT, 'README.md.bak')
+const README_NPM = join(ROOT, 'README.npm.md')
+const swapped = existsSync(README_NPM)
+if (swapped) {
+  copyFileSync(README_PATH, README_BAK)
+  copyFileSync(README_NPM, README_PATH)
+  console.log('swapped in npm README')
+}
+
+try {
+
 step(3, 'pack + isolated install + host-half load')
 const tarball = runNpm(['pack', '--silent']).split(NL).filter(Boolean).pop().trim()
 const sandbox = mkdtempSync(join(tmpdir(), 'dsh-web-notify-release-'))
@@ -69,8 +82,7 @@ try {
 if (dry) {
   console.log('\n[DRY-RUN] publish command that would run:\n  npm publish')
   console.log('[DRY-RUN] every pre-publish gate passed')
-  process.exit(0)
-}
+} else {
 
 step(4, 'whoami gate')
 let who = ''
@@ -89,3 +101,13 @@ step(6, 'verify on registry')
 const v = runNpm(['view', 'dsh-web-notify', 'version']).trim()
 console.log('registry now shows:', v)
 console.log('\nRELEASE COMPLETE published as', who)
+
+}
+
+} finally {
+  if (swapped) {
+    copyFileSync(README_BAK, README_PATH)
+    rmSync(README_BAK, { force: true })
+    console.log('restored full README')
+  }
+}
