@@ -1,7 +1,7 @@
 {
   "name": "dsh-web-notify",
   "description": "Approval attention plugin for the DSH Web GUI — audible + visual alerts (chime, tab badge, OS notification, dock) for pending approvals, session completions, job failures, and connection loss.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

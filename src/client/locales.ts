@@ -94,6 +94,8 @@ export const zh = {
   'settings.field.cooldownMsHint': '同一会话同一类事件在此间隔内只提醒一次',
   'settings.field.diagnostics': 'on-device 观测仪',
   'settings.field.diagnosticsHint': '采样最近 60 次会话快照(含 job 状态),用于排查;状态集合始终自动收集',
+  'settings.field.glow': '环境光氛围',
+  'settings.field.glowHint': '完成时闪绿光、出错时闪红光、待审批时持续橙色内发光',
 } as const
 
 /** English dictionary, checked complete against the zh key set. */
@@ -182,6 +184,8 @@ export const en: Record<LocaleKey, string> = {
   'settings.field.cooldownMsHint': 'One alert per session per event kind within this interval',
   'settings.field.diagnostics': 'On-device observer',
   'settings.field.diagnosticsHint': 'Samples the last 60 session snapshots (incl. job status) for diagnosis; the status set is always collected',
+  'settings.field.glow': 'Ambient glow',
+  'settings.field.glowHint': 'Flashes green on completion, red on error; steady orange while pending',
 }
 
 /** Whichever dictionary matches the browser locale (default zh). */

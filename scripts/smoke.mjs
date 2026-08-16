@@ -23,6 +23,8 @@ function makeEl(tag) {
   return {
     tagName: tag,
     textContent: "",
+    style: {},
+    id: "",
     children: [],
     childNodes: [],
     remove() {

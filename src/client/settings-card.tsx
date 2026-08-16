@@ -5,7 +5,7 @@
  * commit through the settings scope with cached uSES snapshots as before.
  */
 import { useState } from 'react'
-import type { ScopeLike, ScopeSnapshotLike } from './types.ts'
+import { DEFAULTS, type ScopeLike, type ScopeSnapshotLike } from './types.ts'
 import type { LocaleKey, TplVars } from './locales.ts'
 
 type FieldType = 'boolean' | 'number' | 'string'
@@ -27,6 +27,7 @@ const CARD_FIELDS: Record<string, FieldType> = {
   agentError: 'boolean',
   cooldownMs: 'number',
   diagnostics: 'boolean',
+  glow: 'boolean',
 }
 
 interface StagedEdit { text: string; clear: boolean }
@@ -83,8 +84,18 @@ export function createSettingsCardController(scope: ScopeLike): SettingsCardCont
     const record = snap()[layer]
     return record !== null && typeof record === 'object' && Object.hasOwn(record, field) ? (record as Record<string, unknown>)[field] : void 0
   }
-  const format = (field: string): string => { const v = valueOf(field, 'value'); return v === void 0 ? '' : String(v) }
-  const baseOf = (field: string): string => { const v = valueOf(field, 'base'); return v === void 0 ? '' : String(v) }
+  const format = (field: string): string => {
+    const v = valueOf(field, 'value')
+    if (v !== void 0) return String(v)
+    const d = (DEFAULTS as Record<string, unknown>)[field]
+    return d !== void 0 ? String(d) : ''
+  }
+  const baseOf = (field: string): string => {
+    const v = valueOf(field, 'base')
+    if (v !== void 0) return String(v)
+    const d = (DEFAULTS as Record<string, unknown>)[field]
+    return d !== void 0 ? String(d) : ''
+  }
   const stored = (field: string): boolean => {
     const u = snap().user
     return u !== null && typeof u === 'object' && Object.hasOwn(u, field)

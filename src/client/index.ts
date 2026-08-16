@@ -24,6 +24,7 @@ import { mountToasts } from './toast-mount.tsx'
 import { startSentinel } from './sentinel.ts'
 import { startDock } from './dock.ts'
 import { startLifecycleMonitor, startConnectionMonitor, startAgentEvents, jobSamples, seenJobStatuses, jobStatusCounts, hostJobStatuses, hostJobStatusCounts, hostFeedCounters, lastHeartbeatAt } from './lifecycle.ts'
+import { mountGlow } from './glow.ts'
 import { createSettingsCardController, AlerterSettingsCard } from './settings-card.tsx'
 
 /**
@@ -222,7 +223,8 @@ export function apply(ctx: ClientContext, config?: Partial<AlerterConfig>): void
     if (remote !== void 0 && typeof remote.$on === 'function') {
       safeReg(() => startAgentEvents(remote, cfg, { toast: toastStore }, sessions), 'agent-events')
     }
-    mountDispose = () => { for (const d of disposers.reverse()) d() }
+    if (cfg.glow) safeReg(() => mountGlow(toastStore, dockStore), 'glow')
+    mountDispose = () => { for (const d of disposers.reverse()) { try { d() } catch (error) { fail(errors, 'mount', 'disposer', error) } } }
   }
 
   try { mount(mergeConfig(base, served)) } catch (error) { fail(errors, 'mount', 'initial mount', error) }

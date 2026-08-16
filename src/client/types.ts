@@ -40,6 +40,7 @@ export interface AlerterConfig {
   cooldownMs: number
   /** On-device observation ring (`jobSamples`) on/off; the status set is always collected. */
   diagnostics: boolean
+  glow: boolean
   alertKinds: readonly AlerterKind[]
   quiet: QuietHours
   soundResolved: boolean
@@ -63,6 +64,7 @@ export const DEFAULTS: AlerterConfig = {
   agentError: true,
   cooldownMs: 5000,
   diagnostics: true,
+  glow: true,
   alertKinds: ['approval', 'plan-review', 'question'],
   quiet: { enabled: false, start: '23:00', end: '08:00' },
   soundResolved: false,
