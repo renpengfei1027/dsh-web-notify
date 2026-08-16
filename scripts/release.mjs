@@ -52,10 +52,11 @@ step(2, 'smoke (generated bundles)')
 const smokeOut = run(process.execPath, ['scripts/smoke.mjs'])
 console.log(smokeOut.split(NL).filter((l) => /ALL SCENARIOS|FAIL/.test(l)).join(NL) || smokeOut)
 
-// Swap in the concise npm README for the tarball
+// Swap in the concise npm README for the tarball.
+// Backup goes to a temp path (not README*) so npm never packs it.
 const README_PATH = join(ROOT, 'README.md')
-const README_BAK = join(ROOT, 'README.md.bak')
-const README_NPM = join(ROOT, 'README.npm.md')
+const README_BAK = join(tmpdir(), 'dsh-web-notify-readme-bak.md')
+const README_NPM = join(ROOT, '.npm-readme.md')
 const swapped = existsSync(README_NPM)
 if (swapped) {
   copyFileSync(README_PATH, README_BAK)

@@ -113,6 +113,12 @@ DSH Web GUI 的**审批注意力插件**：当任意会话出现待处理的审�
 
 DSH 插件通过 `dsh plugin` 命令安装进 **profile**（`dsh web` 对应 `web` profile）。考虑到 DeepSeek Harness 当前处于开发预览快速迭代期，**推荐开发调试模式挂载**，便于即时迭代与 diagnostics 排查；当然也提供了 npm 一键挂载的备选方式。
 
+### 前提条件
+
+- **Node.js >= 22**
+- **pnpm** — `dsh plugin` 内部使用 pnpm 安装依赖：`npm install -g pnpm`
+- **dsh CLI** — 若未全局安装，所有 `dsh` 命令前缀 `npx @deepseek-ai/dsh`，如 `npx @deepseek-ai/dsh plugin --profile web add dsh-web-notify`
+
 ### 方式一：开发调试模式挂载（当前推荐）
 
 ```sh
@@ -126,6 +132,7 @@ npm run build
 
 # 3. 把仓库挂进 web profile（link: 指向仓库根目录）
 dsh plugin --profile web add link:$(pwd)
+# Windows PowerShell: dsh plugin --profile web add link:$PWD.Path
 
 # 4. 重启 dsh web，设置页「插件配置」下即出现「通知」卡片
 dsh web
@@ -136,6 +143,26 @@ dsh web
 ```sh
 dsh plugin --profile web add dsh-web-notify
 ```
+
+### AI 编码工具 / 沙箱环境注意事项
+
+在 TRAE、Cursor 等 AI 编码工具中安装本插件时，需注意：
+
+1. **沙箱写限制**：AI 工具的沙箱通常阻止写入 `~/.dsh/` 目录，而 `dsh plugin` 和 `dsh web` 都需要写 profile 文件。**必须在 AI 工具外部的普通终端中执行这些命令**。
+2. **切勿手动 `npm install`**：手动把包塞进 `~/.dsh/profiles/web/node_modules/` 会绕过 `dsh plugin` 的依赖链接逻辑，导致插件的 `@deepseek-ai/*` peer 依赖与 DSH host 的模块树脱节，`settings` 服务不可达，命名空间注册静默失败（卡片永远只读）。
+3. **始终用 `dsh plugin --profile web add`**：这是唯一正确的安装方式，它会通过 pnpm 正确链接依赖、更新 `package.json` 和 `cordis.patch.yml`。
+
+### 安装后校验
+
+安装完成并重启 `dsh web` 后，检查以下文件和指标：
+
+| 校验项 | 位置 / 命令 | 预期 |
+|---|---|---|
+| profile dependencies | `~/.dsh/profiles/web/package.json` | `dependencies` 含 `dsh-web-notify` |
+| profile patch | `~/.dsh/profiles/web/cordis.patch.yml` | 含 `- id: notifications` 插入行 |
+| 包已安装 | `~/.dsh/profiles/web/node_modules/dsh-web-notify/` | 目录存在，含 `lib/`、`cordis.patch.yml` |
+| 命名空间已注册 | DevTools Console: `__NOTIFICATIONS__.scopeStatus` | `"ready"`（非 `"unavailable"`） |
+| 卡片可编辑 | 设置页 → 插件配置 → 通知 | 字段可编辑（非只读） |
 
 ### 放行设置命名空间（可选，但推荐）
 
