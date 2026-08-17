@@ -176,7 +176,7 @@ node scripts/patch-apiproxy.mjs
 
 ### 为什么必须 patch（官方暂无优雅注入方式）
 
-DSH 官方把 settings 白名单（`WEB_SETTINGS_NAMESPACES`）与 host 事件转发白名单（`API_REMOTE_FORWARDED_EVENTS`）硬编码在包里，暂不开放插件注入（官方注释标记为 deferred work，见 [deepseek-ai/dsh](https://github.com/deepseek-ai/dsh)），所以只能 patch bundle。脚本在运行时用 `os.homedir()` 定位 npx 缓存并自动发现 `_npx/<hash>` 目录，换机器无需改路径。
+DSH 官方把 settings 白名单（`WEB_SETTINGS_NAMESPACES`）与 host 事件转发白名单（`API_REMOTE_FORWARDED_EVENTS`）硬编码在包里，暂不开放插件注入（官方注释标记为 deferred work，见 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)），所以只能 patch bundle。脚本在运行时用 `os.homedir()` 定位 npx 缓存并自动发现 `_npx/<hash>` 目录，换机器无需改路径。
 
 ### Diagnostics 观察调试
 
