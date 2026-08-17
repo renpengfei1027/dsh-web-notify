@@ -13,25 +13,32 @@
  * bundles, run `node scripts/patch-apiproxy.mjs` again, then restart `dsh web`.
  * A backup of each pristine file is left as <file>.orig-dsh-web-notify.
  *
- * Also upgrades older `approval-alerter` allowlist entries to the current
- * `notifications` namespace (replace-in-place) — so a profile previously
- * patched with an earlier release keeps working after a code rename.
+ * Paths are resolved from the current user's home (npm cache lives under
+ * <home>/AppData/Local/npm-cache/_npx/<hash>), and the per-machine npx hash
+ * directory is discovered by scanning — no hardcoded user names or hashes.
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
+import { homedir } from 'node:os'
+
+const homeCache = `${homedir().replaceAll('\\', '/')}/AppData/Local/npm-cache/_npx`
+const npxHash = readdirSync(homeCache)
+  .find((dir) => existsSync(`${homeCache}/${dir}/node_modules/@deepseek-ai/dsh-host-apiproxy`))
+const NPM_BASE = npxHash
+  ? `${homeCache}/${npxHash}/node_modules/@deepseek-ai`
+  : `${homeCache}/__missing__/node_modules/@deepseek-ai`
 
 const NAMESPACE_TARGETS = [
-  'C:/Users/<user>/AppData/Local/npm-cache/_npx/1e7f6d9597241db0/node_modules/@deepseek-ai/dsh-host-apiproxy/lib/index.js',
-  'C:/Users/<user>/AppData/Local/npm-cache/_npx/1e7f6d9597241db0/node_modules/@deepseek-ai/dsh-host-apiproxy/lib/types/api-proxy.js',
+  // lib/index.js uses the double-quoted multi-line form
+  [`${NPM_BASE}/dsh-host-apiproxy/lib/index.js`, '"notifications"'],
+  // lib/types/api-proxy.js uses the single-quoted one-line form
+  [`${NPM_BASE}/dsh-host-apiproxy/lib/types/api-proxy.js`, "'notifications'"],
 ]
 
 /**
- * Two possible starting states for WEB_SETTINGS_NAMESPACES:
- *   A) pristine  -> last entry is `"web-search-deepseek"` (insert before `];`)
- *   B) previously patched with old `approval-alerter` release
- *             -> last entry is `"approval-alerter"` (replace in-place with
- *                `"notifications"`)
+ * The pristine starting state of WEB_SETTINGS_NAMESPACES:
+ *   last entry is `"web-search-deepseek"` (insert before `];`)
  * Multi-line (tab-indented) form lives in lib/index.js; one-line form lives in
- * lib/types/api-proxy.js. We try A then B, and whichever sticks wins.
+ * lib/types/api-proxy.js. Each form has its own rewrite below.
  */
 const NAMESPACE_REWRITERS = [
   // === lib/index.js form: \t"web-search-deepseek"\n]; -> append \t"notifications"
@@ -44,43 +51,29 @@ const NAMESPACE_REWRITERS = [
     "'web-search-deepseek',\n];",
     "'web-search-deepseek', 'notifications',\n];",
   ),
-  // === old-patch upgrade, multi-line: \t"approval-alerter"\n]; -> \t"notifications"\n];
-  (text) => text.replace(
-    '\t"approval-alerter"\n];',
-    '\t"notifications"\n];',
-  ),
-  // === old-patch upgrade, one-line: 'approval-alerter',\n]; -> 'notifications',\n];
-  (text) => text.replace(
-    "'approval-alerter',\n];",
-    "'notifications',\n];",
-  ),
 ]
 
-const EVENTS_TARGET = 'C:/Users/<user>/AppData/Local/npm-cache/_npx/1e7f6d9597241db0/node_modules/@deepseek-ai/dsh-api-remotes/lib/index.js'
+const EVENTS_TARGET = [`${NPM_BASE}/dsh-api-remotes/lib/index.js`, 'notifications/evt']
 /**
- * Same two starting states for API_REMOTE_FORWARDED_EVENTS (this array has
+ * The pristine starting state of API_REMOTE_FORWARDED_EVENTS (this array has
  * always been tab-indented multi-line only):
- *   A) pristine          -> last entry `\t"settings/document-updated"\n];`
- *   B) old approval-alerter -> last entry `\t"approval-alerter/evt"\n];`
+ *   last entry is `\t"settings/document-updated"\n];`
  */
 const EVENTS_REWRITERS = [
   (text) => text.replace(
     '\t"settings/document-updated"\n];',
     '\t"settings/document-updated",\n\t"notifications/evt"\n];',
   ),
-  (text) => text.replace(
-    '\t"approval-alerter/evt"\n];',
-    '\t"notifications/evt"\n];',
-  ),
 ]
 
-function patchOne(path, marker, rewriteAll) {
+function patchOne(target, rewriteAll) {
+  const [path, marker] = Array.isArray(target) ? target : [target, undefined]
   if (!existsSync(path)) {
     console.log(`SKIP (missing) ${path}`)
     return
   }
   let text = readFileSync(path, 'utf8')
-  if (text.includes(marker)) {
+  if (marker && text.includes(marker)) {
     console.log(`OK (already patched) ${path}`)
     return
   }
@@ -99,8 +92,8 @@ function patchOne(path, marker, rewriteAll) {
   }
 }
 
-for (const path of NAMESPACE_TARGETS) {
-  patchOne(path, '"notifications"', NAMESPACE_REWRITERS)
+for (const target of NAMESPACE_TARGETS) {
+  patchOne(target, NAMESPACE_REWRITERS)
 }
-patchOne(EVENTS_TARGET, 'notifications/evt', EVENTS_REWRITERS)
+patchOne(EVENTS_TARGET, EVENTS_REWRITERS)
 console.log('done')

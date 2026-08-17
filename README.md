@@ -172,7 +172,11 @@ DSH 官方 apiproxy 的 `WEB_SETTINGS_NAMESPACES` 是硬编码白名单，第三
 node scripts/patch-apiproxy.mjs
 ```
 
-之后设置卡片可读可写；不放行则卡片只读，`DEFAULTS` 生效。**`dsh` 升级后需重跑此脚本**（脚本幂等，从旧的 `approval-alerter` 命名空间升级也支持原地替换）。
+之后设置卡片可读可写；不放行则卡片只读，`DEFAULTS` 生效。**`dsh` 升级后需重跑此脚本**（脚本幂等，重跑安全）。
+
+### 为什么必须 patch（官方暂无优雅注入方式）
+
+DSH 官方把 settings 白名单（`WEB_SETTINGS_NAMESPACES`）与 host 事件转发白名单（`API_REMOTE_FORWARDED_EVENTS`）硬编码在包里，暂不开放插件注入（官方注释标记为 deferred work，见 [deepseek-ai/dsh](https://github.com/deepseek-ai/dsh)），所以只能 patch bundle。脚本在运行时用 `os.homedir()` 定位 npx 缓存并自动发现 `_npx/<hash>` 目录，换机器无需改路径。
 
 ### Diagnostics 观察调试
 
@@ -412,7 +416,7 @@ DSH's own `WEB_SETTINGS_NAMESPACES` inside `dsh-host-apiproxy` is a hardcoded al
 node scripts/patch-apiproxy.mjs
 ```
 
-Afterwards the settings card is read+write. Without this patch the card falls back to read-only and `DEFAULTS` apply. **Re-run after every `dsh` upgrade**; the script is idempotent and can also upgrade an earlier `approval-alerter` allowlist in-place.
+Afterwards the settings card is read+write. Without this patch the card falls back to read-only and `DEFAULTS` apply. **Re-run after every `dsh` upgrade**; the script is idempotent and safe to re-run.
 
 ### Diagnostics for debugging
 
