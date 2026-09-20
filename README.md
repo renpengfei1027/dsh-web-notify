@@ -4,18 +4,15 @@
 
 [English version](#dsh-harness-notifier-english) · 默认中文
 
-> DeepSeek Harness 更新迭代很快，rc 版会破坏插件协议——本插件按当前部署的机制重制，
+> DeepSeek Harness 更新迭代很快，rc 版会破坏插件协议——本插件按当前部署的机制实现，
 > 挂载/升级后以「设置 → 插件」里能看到通知卡片、真实触发一次提醒为准。
 
 DSH Web GUI 的**注意力插件**：**待审批 / 待回答提问 / 回合结束 / 会话异常 / 连接恢复**时，
 在浏览器内多通道提醒——提示音、标签页标题徽标 + PWA 徽标、OS 通知、通知中心 dock、toast。
 
-> 本插件是 `dsh-web-notify`（npm 0.1.x）的当前机制重制版（M1）：去掉了「改
-> `@deepseek-ai/dsh-api-remotes` 包文件加转发白名单」的补丁——当前版本的官方转发名单
-> `API_REMOTE_FORWARDED_EVENTS` 已包含检测所需的全部事件，浏览器端 `ctx.remote.$on`
-> 直接订阅即可。旧版依赖的 `@deepseek-ai/dsh-settings`（settingsNamespace /
-> installSettingsSection）也已不在当前部署中。旧版仓库内容（src 构建链、apiproxy
-> patch 脚本、npm 发布配置）已随本版移除，本仓库现在只承载这一个零构建插件。
+纯手写 JS，零构建链：宿主半区为 ESM，客户端半区为
+`window.__ModuleLoader__.load({ id, factory })` 协议的 classic script，
+`require("react")` 走客户端模块表 baseline。
 
 ## 原理
 
@@ -28,7 +25,7 @@ DSH Web GUI 的**注意力插件**：**待审批 / 待回答提问 / 回合结�
 
 - **waterfall 车道必须 prepend 抢位**：cordis waterfall 的首个返回值即终止整条链。
   官方审批/问答 UI 的应答器返回 `await pending.result`，普通 `$on` 注册的观察者排在
-  它之后**永远收不到事件**（v0.1.x 初版"审批/提问没提醒"的根因）。`$on` 底下只是往
+  它之后**永远收不到事件**（这就是"审批/提问没提醒"的典型根因）。`$on` 底下只是往
   ctx 钩子表写 `remote.events.eventPrefix + 事件名`（前缀随启动随机，运行时可读），
   插件直接以 `{ prepend: true }` 向同一张表注册观察者：观察 → `next()` 放行 →
   官方应答器应答 → 应答值原样回流，链返回时精确清除待处理项。内部面不可用时退化为
@@ -162,8 +159,7 @@ dsh plugin --profile web remove dsh-harness-notifier
 - 提醒粒度是**会话级**；被委派的子代理在委派边界即固定「审批永不、提问拒答」策略，
   不会产生待审批/提问条目，只有父会话的审批会进通知中心
 - 提示音需要页面有过用户手势（浏览器音频策略）；无手势时静默降级为视觉通道
-- M1 检测在浏览器侧：页面关闭时页内提醒天然失效——这正是 M2/M3 出页通道的动机
-- 旧版 npm 0.1.x 的宿主 feed / apiproxy 白名单机制已废弃，不再兼容旧版配置字段
+- 检测在浏览器侧：页面关闭时页内提醒天然失效——这正是 M2/M3 出页通道的动机
 
 ## 路线图
 
@@ -199,21 +195,17 @@ MIT
 [中文版](#dsh-harness-notifier) · Chinese by default
 
 > DeepSeek Harness iterates fast and rc releases break plugin protocols — this plugin
-> is rebuilt against the currently deployed mechanism. After mounting/upgrading, treat
-> "the notification card shows up under Settings → Plugins and a real alert fires"
-> as the source of truth.
+> is implemented against the currently deployed mechanism. After mounting/upgrading,
+> treat "the notification card shows up under Settings → Plugins and a real alert
+> fires" as the source of truth.
 
 **Attention plugin for the DSH Web GUI**: on **pending approval / pending question /
 turn completion / session error / connection restore**, it rings back inside the
 browser — chime, tab-title badge + PWA badge, OS notification, notifications dock, toast.
 
-> This is a rebuild of `dsh-web-notify` (npm 0.1.x) against the current mechanism (M1):
-> the "patch `@deepseek-ai/dsh-api-remotes` to extend the forwarding allowlist" hack is
-> gone — the official `API_REMOTE_FORWARDED_EVENTS` already carries every event the
-> detection needs, subscribed directly via `ctx.remote.$on`. The old
-> `@deepseek-ai/dsh-settings` dependency is gone too. The legacy repo contents (src
-> build chain, apiproxy patch script, npm release config) were removed with this
-> version; the repo now hosts only this zero-build plugin.
+Hand-written JS, zero build chain: the host half is ESM, the client half is a classic
+script speaking the `window.__ModuleLoader__.load({ id, factory })` protocol,
+`require("react")` resolved through the client module-table baseline.
 
 ## How it works
 
@@ -227,7 +219,7 @@ browser — chime, tab-title badge + PWA badge, OS notification, notifications d
 - **The waterfall lane must prepend**: the first return value of a cordis waterfall
   terminates the chain. The official approval/question responder returns
   `await pending.result`, so plain `$on` observers registered after it never see the
-  event (root cause of "no approval/question alerts" in the v0.1.x era). The plugin
+  event (a classic root cause of "no approval/question alerts"). The plugin
   registers into the same hook table with `{ prepend: true }`: observe → `next()`
   passes through → the official responder answers → the answer flows back unchanged,
   and the pending item is cleared exactly when the chain returns. Falls back to plain
@@ -378,10 +370,8 @@ Changes apply hot (optimistic echo + 150 ms coalesced writes, no restart).
   approvals can ever reach the dock
 - Chimes need a prior user gesture (browser autoplay policy); without one it silently
   degrades to visual surfaces
-- M1 detection lives in the browser: with the page closed, in-page alerts naturally die
+- Detection lives in the browser: with the page closed, in-page alerts naturally die
   — that is the motivation for the M2/M3 out-of-page channels
-- The old npm 0.1.x host-feed / apiproxy allowlist mechanism is gone; legacy config
-  fields are no longer compatible
 
 ## Roadmap
 
