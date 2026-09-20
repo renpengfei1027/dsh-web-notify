@@ -1,0 +1,13 @@
+# dsh-harness-notifier bundle patch
+#
+# 由 dsh.bundle.patch 声明，随 `dsh plugin --profile web add` 挂载时并入
+# profile 的 patch 层。插件行是裸包名：
+#   - 宿主半区（exports "."，lib/index.js）跑在 dsh web 宿主进程；
+#   - package.json 的 dsh.client 声明让浏览器半区（exports "./client"，
+#     lib/client.js）加载进 Web GUI。
+#
+# 开发挂载：
+#   dsh plugin --profile web add link:<本目录绝对路径>
+- insert:
+    - id: notifications
+      name: dsh-harness-notifier
